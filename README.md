@@ -4,15 +4,17 @@ license: GPLv3
 
 This is just a basic command-line repository search tool for github. It requires both libUseful and libUseful-lua to be installed. These are available at:
 
+```
 https://www.github.com/ColumPaget/libUseful 
 https://www.github.com/ColumPaget/libUseful-lua 
+```
 
 you will also need SWIG installed to compile libUseful-lua (http://www.swig.org)
 
 
 You can search by keywords combined with language that the project should be written in and the minimum number of stars/watches that it has. You can change the sort order and use a proxy for all communications.
 
-
+```
 usage:  lua github-search.lua [options] [search terms]
 
    -l       <language list>  - languages to consider
@@ -42,3 +44,4 @@ examples:
    lua github-search honeypot                    - search for things matching 'honeypot'
    lua github-search ssh honeypot                - search for things matching 'ssh honeypot'
    lua github-search -l c++,go ssh honeypot      - search for things matching 'ssh honeypot' and written in either c++ or go
+```

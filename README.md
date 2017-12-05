@@ -43,7 +43,7 @@ usage:  lua github-search.lua [options] [search terms]
    -S       <number>         - minimum number of stars/watches that a result must have.
    -w       <number>         - minimum number of stars/watches that a result must have.
    -watches <number>         - minimum number of stars/watches that a result must have.
-   -n <number>               - minimum number of results to display. When used with -L filter, it's results displayed, not returned.
+   -n <number>               - minimum number of results to display. When used with -L filter.
    -Q <number>               - change guard level of number of failed results before giving up.
    -p       <proxy url>      - use a proxy
    -proxy   <proxy url>      - use a proxy
@@ -52,7 +52,14 @@ usage:  lua github-search.lua [options] [search terms]
    -help    this help
    --help   this help
 
-proxy urls can be are in the format <protocol>:<user>:<password>@<host>:<port>. all attributes but protcol and host are optional.
+proxy urls can be are in the format 
+```
+<protocol>:<user>:<password>@<host>:<port>
+```
+
+all attributes but protcol and host are optional.
+
+```
 proxy protocols can be:
    ssh          pipe through ssh (ssh -w option)
    sshtunnel    use ssh port forwarding, port automatically selected (ssh -L option)
@@ -64,12 +71,12 @@ proxy protocols can be:
 
 -L applies a post-filter on the results, as github takes the language argument as a hint, not a hard requirement. Thus with -L github can return 100 results, but if only 3 of them are in your required language, only three are displayed, unlike '-l' which will display all 100. -n can be used to insist we keep pulling pages until a certain number are displayed.
 
-However, even if '-n' is used, if more than 100 results are returned with no matches displayed, the search will return an error. You can change this limit using '-Q', but be aware that the search service is rate-limited, and pulling too many results can get you locked out ofr a time.
+However, even if '-n' is used, if more than 100 results are returned with no matches displayed, the search will return an error. You can change this limit using '-Q', but be aware that the search service is rate-limited, and pulling too many results can get you locked out for a time.
 
 ```
 examples:
    lua github-search honeypot                    - search for things matching 'honeypot'
    lua github-search ssh honeypot                - search for things matching 'ssh honeypot'
-   lua github-search -l c++,go ssh honeypot      - search for things matching 'ssh honeypot' and written in either c++ or go
-   lua github-search -n 10 -l go honeypot         - search for things matching 'honeypot' in go, until at least 10 displayed
+   lua github-search -l c++,go ssh honeypot      - search for things matching 'ssh honeypot' written in either c++ or go
+   lua github-search -n 10 -l go honeypot        - search for 'honeypot' written in go, until at least 10 displayed
 ```

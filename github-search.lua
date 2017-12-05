@@ -8,7 +8,11 @@ t=require ("terminal");
 
 -- Some global vars
 proxy=""
-
+project_langs={}
+project_count=0
+matching_projects=0
+quit_lines=100
+returned_lines=0
 
 
 function LanguageInSearch(search_languages, language)
@@ -25,26 +29,39 @@ function LanguageInSearch(search_languages, language)
 	return false
 end
 
+-- display the final list of projects per langugae
+function DisplayLanguageCounts()
 
+table.sort(project_langs)
+io.write(t.format("~m"..project_count.." projects (" .. matching_projects.. " matching) : "))
+for key,value in pairs(project_langs)
+do
+	io.write(key.." "..value..", ")
+end
+print(t.format("~0"))
+
+end
 
 
 function ParseReply(doc, search_languages)
-local langs={}
 local val=0 
-local items=0
+local display_count=0
 
 P=dataparser.PARSER("json",doc)
 --print(t.format("%rMATCHES: " .. P:value("total_count") .. "~0"))
 I=P:open("/items");
+if I == nil then return -1 end
+
 while I:next()
 do
 	language=I:value("language")
-	items=items+1
+	project_count=project_count + 1
+	returned_lines=returned_lines+1
 	if language == nil then language="none" end
 
-	val=langs[language]
-	if val == nil then langs[language]=1 
-	else langs[language]=val+1
+	val=project_langs[language]
+	if val == nil then project_langs[language]=1 
+	else project_langs[language]=val+1
 	end
 
 	if LanguageInSearch(search_languages, language)
@@ -52,23 +69,24 @@ do
 		print(t.format("~e~g" .. I:value("name") .. "~0") .. "    lang: " .. language .. "  watchers:" .. I:value("watchers") .. "  forks:" .. I:value("forks") .. "    " .. t.format("~b" .. I:value("html_url") .. "~0"))
 		print(I:value("description"))
 		print()
+		display_count=display_count+1
 	end
 end
 
-table.sort(langs)
-io.write(t.format("~m"..items.." items: "))
-for key,value in pairs(langs)
-do
-	io.write(key.." "..value..", ")
+if returned_lines >= quit_lines and display_count == 0
+then
+print(t.format("~e~rERROR:~0 ".. returned_lines .. " lines returned, but ~rnone~0 match request. (use -Q to overcome this check, but beware of rate limits)"))
+return -1
 end
-print(t.format("~0"))
+
+return display_count
 end
 
 
 
 
 function BuildStringList(list, str)
-	if list == nil 
+	if list == nil or string.len(list) == 0
 	then
 			list=str
 	else
@@ -86,12 +104,15 @@ print("usage:  lua github-search.lua [options] [search terms]")
 print("")
 print("   -l       <language list>  - languages to consider")
 print("   -lang    <language list>  - languages to consider")
+print("   -L       <language list>  - post filter results to show ONLY this language")
 print("   -s       <sort key>       - sort results, descending order. Key can be 'stars', 'forks' or 'updated'.")
 print("   +s       <sort key>       - sort results, ascending order. Key can be 'stars', 'forks' or 'updated'.")
 print("   -stars   <number>         - minimum number of stars/watches that a result must have.")
 print("   -S       <number>         - minimum number of stars/watches that a result must have.")
 print("   -w       <number>         - minimum number of stars/watches that a result must have.")
 print("   -watches <number>         - minimum number of stars/watches that a result must have.")
+print("   -n <number>               - minimum number of results to display. When used with -L filter, it's results displayed, not returned.")
+print("   -Q <number>               - change guard level of number of failed results before giving up.")
 print("   -p       <proxy url>      - use a proxy")
 print("   -proxy   <proxy url>      - use a proxy")
 print("   -?       this help")
@@ -107,26 +128,35 @@ print("   socks4       socks4 protocol")
 print("   socks5       socks5 protocol")
 print("   https        https CONNECT proxy")
 print("")
+print("-L applies a post-filter on the results, as github takes the language argument as a hint, not a hard requirement. Thus with -L github can return 100 results, but if only 3 of them are in your required language, only three are displayed, unlike '-l' which will display all 100. -n can be used to insist we keep pulling pages until a certain number are displayed.")
+print("However, even if '-n' is used, if more than 100 results are returned with no matches displayed, the search will return an error. You can change this limit using '-Q', but be aware that the search service is rate-limited, and pulling too many results can get you locked out ofr a time.")
+print("")
 print("examples:")
 print("   lua github-search honeypot                    - search for things matching 'honeypot'")
 print("   lua github-search ssh honeypot                - search for things matching 'ssh honeypot'")
 print("   lua github-search -l c++,go ssh honeypot      - search for things matching 'ssh honeypot' and written in either c++ or go")
+print("   lua github-search -n 10 -l go honeypot         - search for things matching 'honeypot' in go, until at least 10 displayed")
 end
 
 
 
 function ParseCommandLine(args)
-local lang
-local query=""
 local langs=""
-local lang_lists=""
+local query=""
+local query_langs=""
 local sort=""
+local num_results=0
 
 for i,v in ipairs(args)
 do
 	if v == '-l' or v == '-lang'
 	then
-			if string.len(langs) ==0 then langs=args[i+1] end
+		if string.len(query_langs) > 0 then query_langs = query_langs .. "," end
+		query_langs=query_langs .. args[i+1]
+		args[i+1]=""
+	elseif v == '-L'
+	then
+--			if string.len(langs) ==0 then langs=args[i+1] end
 			langs=BuildStringList(langs,args[i+1])
 			args[i+1]=""
 	elseif v == '-s'
@@ -146,6 +176,14 @@ do
 	then
 		proxy=args[i+1]
 		args[i+1]=""
+	elseif v == '-n' 
+	then
+		num_results=tonumber(args[i+1])
+		args[i+1]=""
+	elseif v == '-Q' 
+	then
+		quit_lines=tonumber(args[i+1])
+		args[i+1]=""
 	elseif v == '-?' or v == '-h' or v == '-help' or v == '--help'
 	then
 		PrintHelp()
@@ -163,8 +201,7 @@ then
 	process.exit(0)
 end
 
-
-return query,langs,qlang,sort
+return query,langs,query_langs,sort,num_results
 end
 
 
@@ -183,25 +220,46 @@ end
 
 
 
+function IterateRequests(query, language, sort, required_results)
+
+local val=0
+local pgcount=1
+local url, doc
+local S
+
+while matching_projects < required_results
+do
+	url="https://api.github.com/search/repositories?q=" .. Qquery .. "&language=" .. Qlanguage .. "&sort="..sort.."&per_page=100".."&page="..pgcount;
+--	print("QUERY: "..url)
+
+	S=stream.STREAM(url);
+	if ConnectedOkay(S)
+	then
+		doc=S:readdoc()
+		val=ParseReply(doc, languages)
+		if val == -1 then break end
+		matching_projects = matching_projects + val
+	end
+	pgcount=pgcount + 1
+end
+ 
+end
+
 
 -- lu_set sets values that change libUseful's behavior, here we set the default user-agent string for this script
-process.lu_set("HTTP:UserAgent","Colums Github Search Script")
+process.lu_set("HTTP:UserAgent","Colums Github Search Script (https://github.com/ColumPaget/github-search)")
 
-query,languages,qlang,sort=ParseCommandLine(arg)
+query,languages,qlang,sort,required_results=ParseCommandLine(arg)
 
 if string.len(proxy) then net.setProxy(proxy) end
 
+-- if we are postfiltering by language but didn't specify any query language then set the query language to be the same as the postfilter
+if string.len(languages) > 0 and string.len(qlang) == 0 then qlang=languages end
+
 Qquery=strutil.httpQuote(query);
 Qlanguage=strutil.httpQuote(qlang);
+if required_results < 1 then required_results=1 end
 
-url="https://api.github.com/search/repositories?q=" .. Qquery .. "&language=" .. Qlanguage .. "&sort="..sort.."&per_page=100";
-
-print("QUERY: "..url)
-S=stream.STREAM(url);
-if ConnectedOkay(S)
-then
-	doc=S:readdoc()
-	ParseReply(doc, languages)
-end
-
+IterateRequests(Qquery, Qlanguage, sort, required_results)
+DisplayLanguageCounts()
 

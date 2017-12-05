@@ -60,11 +60,13 @@ proxy protocols can be:
    socks5       socks5 protocol
    https        https CONNECT proxy
 
+```
 
 -L applies a post-filter on the results, as github takes the language argument as a hint, not a hard requirement. Thus with -L github can return 100 results, but if only 3 of them are in your required language, only three are displayed, unlike '-l' which will display all 100. -n can be used to insist we keep pulling pages until a certain number are displayed.
 
 However, even if '-n' is used, if more than 100 results are returned with no matches displayed, the search will return an error. You can change this limit using '-Q', but be aware that the search service is rate-limited, and pulling too many results can get you locked out ofr a time.
 
+```
 examples:
    lua github-search honeypot                    - search for things matching 'honeypot'
    lua github-search ssh honeypot                - search for things matching 'ssh honeypot'

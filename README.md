@@ -51,6 +51,7 @@ usage:  lua github-search.lua [options] [search terms]
    -h       this help
    -help    this help
    --help   this help
+```
 
 proxy urls can be are in the format 
 ```

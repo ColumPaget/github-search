@@ -7,10 +7,12 @@ t=require ("terminal");
 
 
 -- Some global vars
+version=1.3
 proxy=""
 project_langs={}
 project_count=0
 matching_projects=0
+description_maxlen=300
 quit_lines=100
 returned_lines=0
 
@@ -46,6 +48,7 @@ end
 function ParseReply(doc, search_languages)
 local val=0 
 local display_count=0
+local str
 
 P=dataparser.PARSER("json",doc)
 --print(t.format("%rMATCHES: " .. P:value("total_count") .. "~0"))
@@ -66,8 +69,10 @@ do
 
 	if LanguageInSearch(search_languages, language)
 	then
-		print(t.format("~e~g" .. I:value("name") .. "~0") .. "    lang: " .. language .. "  watchers:" .. I:value("watchers") .. "  forks:" .. I:value("forks") .. "    " .. t.format("~b" .. I:value("html_url") .. "~0"))
-		print(I:value("description"))
+		print(t.format("~e~g" .. I:value("name") .. "~0    lang: ~e~m" .. language .. "~0  watchers:" .. I:value("watchers") .. "  forks:" .. I:value("forks") .. "    " .. "~b" .. I:value("html_url") .. "~0"))
+		str=I:value("description")
+		if ((description_maxlen > 0) and (strutil.strlen(str) > description_maxlen)) then str=str.sub(str,1,description_maxlen).."..." end
+		print(str)
 		print()
 		display_count=display_count+1
 	end
@@ -112,9 +117,11 @@ print("   -S       <number>         - minimum number of stars/watches that a res
 print("   -w       <number>         - minimum number of stars/watches that a result must have.")
 print("   -watches <number>         - minimum number of stars/watches that a result must have.")
 print("   -n <number>               - minimum number of results to display. When used with -L filter, it's results displayed, not returned.")
+print("   -dl <number>              - maximum number of characters to show of description, defaults to 300. This is to deal with annoying people who write novellas in their project description. Set to -dl 0 if you really want to read their magnum opus.")
 print("   -Q <number>               - change guard level of number of failed results before giving up.")
 print("   -p       <proxy url>      - use a proxy")
 print("   -proxy   <proxy url>      - use a proxy")
+print("   -version  program version")
 print("   -?       this help")
 print("   -h       this help")
 print("   -help    this help")
@@ -184,9 +191,17 @@ do
 	then
 		quit_lines=tonumber(args[i+1])
 		args[i+1]=""
+	elseif v == '-dl' 
+	then
+		description_maxlen=tonumber(args[i+1])
+		args[i+1]=""
 	elseif v == '-?' or v == '-h' or v == '-help' or v == '--help'
 	then
 		PrintHelp()
+		process.exit(0);
+	elseif v == '-version' or v == '--version'
+	then
+		print("version: "..version)
 		process.exit(0);
 	else
 		if string.len(query) > 0 then query=query.." " end

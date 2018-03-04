@@ -44,6 +44,7 @@ usage:  lua github-search.lua [options] [search terms]
    -w       <number>         - minimum number of stars/watches that a result must have.
    -watches <number>         - minimum number of stars/watches that a result must have.
    -n <number>               - minimum number of results to display. When used with -L filter.
+   -dl <number>              - maximum number of characters to show of description, defaults to 300. This is to deal with annoying people who write novellas in their project description. Set to -dl 0 if you really want to read their magnum opus.
    -Q <number>               - change guard level of number of failed results before giving up.
    -p       <proxy url>      - use a proxy
    -proxy   <proxy url>      - use a proxy

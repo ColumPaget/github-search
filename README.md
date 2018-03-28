@@ -33,8 +33,6 @@ You might actually see FEWER results! This is because github has returned more r
 
 ```
 usage:  lua github-search.lua [options] [search terms]
-
-   -l       <language list>  - languages to consider
    -lang    <language list>  - languages to consider
    -L       <language list>  - post filter results to show ONLY this language
    -s       <sort key>       - sort results, descending order. Key can be 'stars', 'forks' or 'updated'.
@@ -43,15 +41,20 @@ usage:  lua github-search.lua [options] [search terms]
    -S       <number>         - minimum number of stars/watches that a result must have.
    -w       <number>         - minimum number of stars/watches that a result must have.
    -watches <number>         - minimum number of stars/watches that a result must have.
-   -n <number>               - minimum number of results to display. When used with -L filter.
-   -dl <number>              - maximum number of characters to show of description, defaults to 300. This is to deal with annoying people who write novellas in their project description. Set to -dl 0 if you really want to read their magnum opus.
+   -created <date>           - created since date.
+   -since   <date>           - updated since date.
+   -n <number>               - minimum number of results to display. When used with -L filter, it's results displayed, not returned.
+   -dl <number>              - maximum number of characters to show of description, defaults to 300. This is to deal with annoying people who write
+ novellas in their project description. Set to -dl 0 if you really want to read their magnum opus.
    -Q <number>               - change guard level of number of failed results before giving up.
    -p       <proxy url>      - use a proxy
    -proxy   <proxy url>      - use a proxy
+   -version  program version
    -?       this help
    -h       this help
    -help    this help
    --help   this help
+
 ```
 
 proxy urls can be are in the format 

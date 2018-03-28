@@ -7,7 +7,7 @@ t=require ("terminal");
 
 
 -- Some global vars
-version=1.3
+version=1.5
 proxy=""
 project_langs={}
 project_count=0
@@ -116,6 +116,8 @@ print("   -stars   <number>         - minimum number of stars/watches that a res
 print("   -S       <number>         - minimum number of stars/watches that a result must have.")
 print("   -w       <number>         - minimum number of stars/watches that a result must have.")
 print("   -watches <number>         - minimum number of stars/watches that a result must have.")
+print("   -created <date>           - created since date.")
+print("   -since   <date>           - updated since date.")
 print("   -n <number>               - minimum number of results to display. When used with -L filter, it's results displayed, not returned.")
 print("   -dl <number>              - maximum number of characters to show of description, defaults to 300. This is to deal with annoying people who write novellas in their project description. Set to -dl 0 if you really want to read their magnum opus.")
 print("   -Q <number>               - change guard level of number of failed results before giving up.")
@@ -179,6 +181,16 @@ do
 		if string.len(query) > 0 then query=query.." " end
 		query=query .. "stars:>" .. args[i+1]
 		args[i+1]=""
+	elseif v == '-created'
+	then
+		if string.len(query) > 0 then query=query.." " end
+		query=query .. "created:>" .. args[i+1]
+		args[i+1]=""
+	elseif v == '-since'
+	then
+		if string.len(query) > 0 then query=query.." " end
+		query=query .. "pushed:>" .. args[i+1]
+		args[i+1]=""
 	elseif v == '-p' or v == '-proxy'
 	then
 		proxy=args[i+1]
@@ -210,7 +222,8 @@ do
 end
 
 
-if string.len(query) < 1
+
+if string.len(query) < 1 and string.len(query_langs)  < 1
 then
 	print("Please supply a search term on the command line")
 	process.exit(0)
@@ -235,7 +248,7 @@ end
 
 
 
-function IterateRequests(query, language, sort, required_results)
+function IterateRequests(query, sort, required_results)
 
 local val=0
 local pgcount=1
@@ -244,8 +257,8 @@ local S
 
 while matching_projects < required_results
 do
-	url="https://api.github.com/search/repositories?q=" .. Qquery .. "&language=" .. Qlanguage .. "&sort="..sort.."&per_page=100".."&page="..pgcount;
---	print("QUERY: "..url)
+	url="https://api.github.com/search/repositories?q=" .. query .. "&sort="..sort.."&per_page=100".."&page="..pgcount;
+	print("QUERY: "..url)
 
 	S=stream.STREAM(url);
 	if ConnectedOkay(S)
@@ -254,12 +267,19 @@ do
 		val=ParseReply(doc, languages)
 		if val == -1 then break end
 		matching_projects = matching_projects + val
+	else
+		print("Bad server reply, either out of results or rate-limiting");
+		break;
 	end
 	pgcount=pgcount + 1
 end
  
 end
 
+
+
+
+---------------------------------------- MAIN STARTS HERE --------------------------------------------
 
 -- lu_set sets values that change libUseful's behavior, here we set the default user-agent string for this script
 process.lu_set("HTTP:UserAgent","Colums Github Search Script (https://github.com/ColumPaget/github-search)")
@@ -270,11 +290,14 @@ if string.len(proxy) then net.setProxy(proxy) end
 
 -- if we are postfiltering by language but didn't specify any query language then set the query language to be the same as the postfilter
 if string.len(languages) > 0 and string.len(qlang) == 0 then qlang=languages end
+if string.len(qlang)
+then
+query=query .. " language:" .. qlang;
+end
 
 Qquery=strutil.httpQuote(query);
-Qlanguage=strutil.httpQuote(qlang);
 if required_results < 1 then required_results=1 end
 
-IterateRequests(Qquery, Qlanguage, sort, required_results)
+IterateRequests(Qquery, sort, required_results)
 DisplayLanguageCounts()
 

@@ -107,8 +107,8 @@ print("github-search: copyright Colum Paget 2017")
 print("contact: colums.projects@github.com")
 print("usage:  lua github-search.lua [options] [search terms]")
 print("")
-print("   -l       <language list>  - languages to consider")
-print("   -lang    <language list>  - languages to consider")
+print("   -l       <language list>  - languages to consider, a comma separated list. Prefix a language name with '!' to exclude.")
+print("   -lang    <language list>  - languages to consider, a comma separated list. Prefix a language name with '!' to exclude.")
 print("   -L       <language list>  - post filter results to show ONLY this language")
 print("   -s       <sort key>       - sort results, descending order. Key can be 'stars', 'forks' or 'updated'.")
 print("   +s       <sort key>       - sort results, ascending order. Key can be 'stars', 'forks' or 'updated'.")
@@ -258,7 +258,7 @@ local S
 while matching_projects < required_results
 do
 	url="https://api.github.com/search/repositories?q=" .. query .. "&sort="..sort.."&per_page=100".."&page="..pgcount;
-	print("QUERY: "..url)
+	 print("QUERY: "..url)
 
 	S=stream.STREAM(url);
 	if ConnectedOkay(S)
@@ -278,6 +278,30 @@ end
 
 
 
+function QueryFormatLanguages(qlang, languages)
+local output=""
+
+-- if we are postfiltering by language but didn't specify any query language then set the query language to be the same as the postfilter
+if string.len(languages) > 0 and string.len(qlang) == 0 then qlang=languages end
+if string.len(qlang) > 0
+then
+	toks=strutil.TOKENIZER(qlang,",")
+	item=toks:next()
+	while item
+	do
+		if (string.sub(item, 0, 1) == '!')
+		then
+			output=output .. " -language:" .. string.sub(item,2);
+		else
+			output=output .. " language:" .. item;
+		end
+	item=toks:next()
+	end
+end
+
+print("qlang: ",output)
+return output
+end
 
 ---------------------------------------- MAIN STARTS HERE --------------------------------------------
 
@@ -288,12 +312,7 @@ query,languages,qlang,sort,required_results=ParseCommandLine(arg)
 
 if string.len(proxy) then net.setProxy(proxy) end
 
--- if we are postfiltering by language but didn't specify any query language then set the query language to be the same as the postfilter
-if string.len(languages) > 0 and string.len(qlang) == 0 then qlang=languages end
-if string.len(qlang)
-then
-query=query .. " language:" .. qlang;
-end
+query=query .. QueryFormatLanguages(qlang, languages)
 
 Qquery=strutil.httpQuote(query);
 if required_results < 1 then required_results=1 end

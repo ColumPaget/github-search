@@ -33,7 +33,8 @@ You might actually see FEWER results! This is because github has returned more r
 
 ```
 usage:  lua github-search.lua [options] [search terms]
-   -lang    <language list>  - languages to consider
+   -l       <language list>  - languages to consider, comma separated list. Prefix and language name with '!' to exclude it.
+   -lang    <language list>  - languages to consider, comma separated list. Prefix and language name with '!' to exclude it.
    -L       <language list>  - post filter results to show ONLY this language
    -s       <sort key>       - sort results, descending order. Key can be 'stars', 'forks' or 'updated'.
    +s       <sort key>       - sort results, ascending order. Key can be 'stars', 'forks' or 'updated'.

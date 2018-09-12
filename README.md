@@ -44,14 +44,14 @@ usage:  lua github-search.lua [options] [search terms]
    -watches <number>         - minimum number of stars/watches that a result must have.
    -created <date>           - created since date.
    -since   <date>           - updated since date.
-   -size    <bytes>          - repo larger than <bytes>.
-   -sz      <bytes>          - repo larger than <bytes>.
+   -size    <bytes>          - repo larger than <bytes>. <bytes can have a metric suffix like 20k or 30G.
+   -sz      <bytes>          - repo larger than <bytes>. <bytes can have a metric suffix like 20k or 30G.
    -license <key>            - search by repo license. <key> is a github-style license key.
-   -lic     <key>            - search by repo license. <key> is a github-style license key.
+   -li      <key>            - search by repo license. <key> is a github-style license key.
    -n <number>               - minimum number of results to display. When used with -L filter, it's results displayed, not returned.
-   -dl <number>              - maximum number of characters to show of description, defaults to 300. This is to deal with annoying people who write
- novellas in their project description. Set to -dl 0 if you really want to read their magnum opus.
+   -dl <number>              - maximum number of characters to show of description, defaults to 300. This is to deal with annoying people who write novellas in their project description. Set to -dl 0 if you really want to read their magnum opus.
    -Q <number>               - change guard level of number of failed results before giving up.
+   -d                        - debug mode, print out json reply from github.
    -p       <proxy url>      - use a proxy
    -proxy   <proxy url>      - use a proxy
    -version  program version

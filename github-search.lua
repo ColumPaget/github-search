@@ -7,7 +7,7 @@ t=require ("terminal");
 
 
 -- Some global vars
-version=1.6
+version=1.8
 proxy=""
 project_langs={}
 project_count=0
@@ -15,7 +15,7 @@ matching_projects=0
 description_maxlen=300
 quit_lines=100
 returned_lines=0
-
+debug=false
 
 function LanguageInSearch(search_languages, language)
 	if search_languages==nil or string.len(search_languages) ==0 then return true end
@@ -124,13 +124,14 @@ print("   -w       <number>         - minimum number of stars/watches that a res
 print("   -watches <number>         - minimum number of stars/watches that a result must have.")
 print("   -created <date>           - created since date.")
 print("   -since   <date>           - updated since date.")
-print("   -size    <bytes>          - repo larger than <bytes>.")
-print("   -sz      <bytes>          - repo larger than <bytes>.")
+print("   -size    <bytes>          - repo larger than <bytes>. <bytes can have a metric suffix like 20k or 30G.")
+print("   -sz      <bytes>          - repo larger than <bytes>. <bytes can have a metric suffix like 20k or 30G.")
 print("   -license <key>            - search by repo license. <key> is a github-style license key.")
-print("   -lic     <key>            - search by repo license. <key> is a github-style license key.")
+print("   -li      <key>            - search by repo license. <key> is a github-style license key.")
 print("   -n <number>               - minimum number of results to display. When used with -L filter, it's results displayed, not returned.")
 print("   -dl <number>              - maximum number of characters to show of description, defaults to 300. This is to deal with annoying people who write novellas in their project description. Set to -dl 0 if you really want to read their magnum opus.")
 print("   -Q <number>               - change guard level of number of failed results before giving up.")
+print("   -d                        - debug mode, print out json reply from github.")
 print("   -p       <proxy url>      - use a proxy")
 print("   -proxy   <proxy url>      - use a proxy")
 print("   -version  program version")
@@ -232,6 +233,9 @@ do
 	then
 		PrintHelp()
 		process.exit(0);
+	elseif v == '-d' 
+	then
+		debug=true
 	elseif v == '-version' or v == '--version'
 	then
 		print("version: "..version)
@@ -285,7 +289,7 @@ do
 	if ConnectedOkay(S)
 	then
 		doc=S:readdoc()
-print(doc)
+		if debug == true then print(doc) end
 		val=ParseReply(doc, languages)
 		if val < 1 then break end
 		matching_projects = matching_projects + val

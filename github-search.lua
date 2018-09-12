@@ -51,7 +51,11 @@ local display_count=0
 local str
 
 P=dataparser.PARSER("json",doc)
---print(t.format("%rMATCHES: " .. P:value("total_count") .. "~0"))
+str=P:value("total_count");
+if str==nil then return -1 end
+
+if (tonumber(str) < 1) then return(0) end
+ 
 I=P:open("/items");
 if I == nil then return -1 end
 
@@ -149,6 +153,7 @@ end
 
 
 
+
 function ParseCommandLine(args)
 local langs=""
 local query=""
@@ -190,6 +195,16 @@ do
 	then
 		if string.len(query) > 0 then query=query.." " end
 		query=query .. "pushed:>" .. args[i+1]
+		args[i+1]=""
+	elseif v == '-licence' or v == "-license" or v =="-li"
+	then
+		if string.len(query) > 0 then query=query.." " end
+		query=query .. "license:" .. args[i+1]
+		args[i+1]=""
+	elseif v == '-size' or v == "-sz"
+	then
+		if string.len(query) > 0 then query=query.." " end
+		query=query .. "size:>" .. args[i+1]
 		args[i+1]=""
 	elseif v == '-p' or v == '-proxy'
 	then
@@ -265,7 +280,7 @@ do
 	then
 		doc=S:readdoc()
 		val=ParseReply(doc, languages)
-		if val == -1 then break end
+		if val < 1 then break end
 		matching_projects = matching_projects + val
 	else
 		print("Bad server reply, either out of results or rate-limiting");

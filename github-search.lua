@@ -62,6 +62,8 @@ if I == nil then return -1 end
 while I:next()
 do
 	language=I:value("language")
+-- spdx_id"
+	license=I:value("license/key")
 	project_count=project_count + 1
 	returned_lines=returned_lines+1
 	if language == nil then language="none" end
@@ -73,7 +75,7 @@ do
 
 	if LanguageInSearch(search_languages, language)
 	then
-		print(t.format("~e~g" .. I:value("name") .. "~0    lang: ~e~m" .. language .. "~0  watchers:" .. I:value("watchers") .. "  forks:" .. I:value("forks") .. "    " .. "~b" .. I:value("html_url") .. "~0"))
+		print(t.format("~e~g" .. I:value("name") .. "~0    lang: ~e~m" .. language .. "~0  license: ~e~m"..license.. "~0  watchers:" .. I:value("watchers") .. "  forks:" .. I:value("forks") .. "    " .. "~b" .. I:value("html_url") .. "~0"))
 		str=I:value("description")
 		if ((description_maxlen > 0) and (strutil.strlen(str) > description_maxlen)) then str=str.sub(str,1,description_maxlen).."..." end
 		print(str)
@@ -279,6 +281,7 @@ do
 	if ConnectedOkay(S)
 	then
 		doc=S:readdoc()
+print(doc)
 		val=ParseReply(doc, languages)
 		if val < 1 then break end
 		matching_projects = matching_projects + val

@@ -7,7 +7,7 @@ t=require ("terminal");
 
 
 -- Some global vars
-version=1.8
+version=1.9
 proxy=""
 project_langs={}
 project_count=0
@@ -16,6 +16,27 @@ description_maxlen=300
 quit_lines=100
 returned_lines=0
 debug=false
+strip_non_ascii=false
+
+
+function CleanNonASCIIChars(str)
+local i, c
+local new=""
+
+
+for i = 1, #str do
+    c = string.sub(str, i, i)
+
+		if string.byte(c) < 32 or string.byte(c) > 126
+		then
+			new=new..'?'
+		else new=new..c
+		end
+end
+
+return new
+end
+
 
 function LanguageInSearch(search_languages, language)
 	if search_languages==nil or string.len(search_languages) ==0 then return true end
@@ -48,7 +69,7 @@ end
 function ParseReply(doc, search_languages)
 local val=0 
 local display_count=0
-local str
+local str, name, description
 
 P=dataparser.PARSER("json",doc)
 str=P:value("total_count");
@@ -75,10 +96,19 @@ do
 
 	if LanguageInSearch(search_languages, language)
 	then
-		print(t.format("~e~g" .. I:value("name") .. "~0    lang: ~e~m" .. language .. "~0  license: ~e~m"..license.. "~0  watchers:" .. I:value("watchers") .. "  forks:" .. I:value("forks") .. "    " .. "~b" .. I:value("html_url") .. "~0"))
-		str=I:value("description")
-		if ((description_maxlen > 0) and (strutil.strlen(str) > description_maxlen)) then str=str.sub(str,1,description_maxlen).."..." end
-		print(str)
+
+		if strip_non_ascii == true
+		then 
+			name=CleanNonASCIIChars(I:value("name"))
+			description=CleanNonASCIIChars(I:value("description"))
+		else
+			name=I:value("name")
+			description=I:value("description")
+		end
+
+		print(t.format("~e~g" .. name .. "~0    lang: ~e~m" .. language .. "~0  license: ~e~m"..license.. "~0  watchers:" .. I:value("watchers") .. "  forks:" .. I:value("forks") .. "    " .. "~b" .. I:value("html_url") .. "~0"))
+		if ((description_maxlen > 0) and (strutil.strlen(description) > description_maxlen)) then str=string.sub(description,1,description_maxlen).."..." end
+		print(description)
 		print()
 		display_count=display_count+1
 	end
@@ -128,6 +158,7 @@ print("   -size    <bytes>          - repo larger than <bytes>. <bytes can have 
 print("   -sz      <bytes>          - repo larger than <bytes>. <bytes can have a metric suffix like 20k or 30G.")
 print("   -license <key>            - search by repo license. <key> is a github-style license key.")
 print("   -li      <key>            - search by repo license. <key> is a github-style license key.")
+print("   -ascii                    - strip non-ascii chars (use to remove non-latin/UTF chars that screw up the terminal)")
 print("   -n <number>               - minimum number of results to display. When used with -L filter, it's results displayed, not returned.")
 print("   -dl <number>              - maximum number of characters to show of description, defaults to 300. This is to deal with annoying people who write novellas in their project description. Set to -dl 0 if you really want to read their magnum opus.")
 print("   -Q <number>               - change guard level of number of failed results before giving up.")
@@ -229,6 +260,9 @@ do
 	then
 		description_maxlen=tonumber(args[i+1])
 		args[i+1]=""
+	elseif v == '-ascii' 
+	then
+		strip_non_ascii=true
 	elseif v == '-?' or v == '-h' or v == '-help' or v == '--help'
 	then
 		PrintHelp()

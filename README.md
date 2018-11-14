@@ -48,6 +48,7 @@ usage:  lua github-search.lua [options] [search terms]
    -sz      <bytes>          - repo larger than <bytes>. <bytes can have a metric suffix like 20k or 30G.
    -license <key>            - search by repo license. <key> is a github-style license key.
    -li      <key>            - search by repo license. <key> is a github-style license key.
+   -ascii                    - strip non-ascii chars (use to remove non-latin/UTF chars that screw up the terminal.
    -n <number>               - minimum number of results to display. When used with -L filter, it's results displayed, not returned.
    -dl <number>              - maximum number of characters to show of description, defaults to 300. This is to deal with annoying people who write novellas in their project description. Set to -dl 0 if you really want to read their magnum opus.
    -Q <number>               - change guard level of number of failed results before giving up.

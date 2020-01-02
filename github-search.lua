@@ -52,6 +52,7 @@ function LanguageInSearch(search_languages, language)
 	return false
 end
 
+
 -- display the final list of projects per langugae
 function DisplayLanguageCounts()
 
@@ -107,8 +108,14 @@ do
 		end
 
 		print(t.format("~e~g" .. name .. "~0    lang: ~e~m" .. language .. "~0  license: ~e~m"..license.. "~0  watchers:" .. I:value("watchers") .. "  forks:" .. I:value("forks") .. "    " .. "~b" .. I:value("html_url") .. "~0"))
-		if ((description_maxlen > 0) and (strutil.strlen(description) > description_maxlen)) then str=string.sub(description,1,description_maxlen).."..." end
+
+		if ((description_maxlen > 0) and (strutil.strlen(description) > description_maxlen)) 
+		then 
+		print(string.sub(description,1,description_maxlen).."...")
+		else
 		print(description)
+		end
+
 		print()
 		display_count=display_count+1
 	end

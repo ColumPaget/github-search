@@ -7,7 +7,7 @@ t=require ("terminal");
 
 
 -- Some global vars
-version=1.9
+version=1.11
 proxy=""
 project_langs={}
 project_count=0

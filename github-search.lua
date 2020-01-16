@@ -150,8 +150,8 @@ print("github-search: copyright Colum Paget 2017")
 print("contact: colums.projects@github.com")
 print("usage:  lua github-search.lua [options] [search terms]")
 print("")
-print("   -l       <language list>  - languages to consider, a comma separated list. Prefix a language name with '!' to exclude.")
-print("   -lang    <language list>  - languages to consider, a comma separated list. Prefix a language name with '!' to exclude.")
+print("   -l       <language list>  - languages to consider, a comma separated list. Prefix a language name with '!' or '-' to exclude.")
+print("   -lang    <language list>  - languages to consider, a comma separated list. Prefix a language name with '!' or '-' to exclude.")
 print("   -L       <language list>  - post filter results to show ONLY this language")
 print("   -s       <sort key>       - sort results, descending order. Key can be 'stars', 'forks' or 'updated'.")
 print("   +s       <sort key>       - sort results, ascending order. Key can be 'stars', 'forks' or 'updated'.")
@@ -193,7 +193,8 @@ print("examples:")
 print("   lua github-search honeypot                    - search for things matching 'honeypot'")
 print("   lua github-search ssh honeypot                - search for things matching 'ssh honeypot'")
 print("   lua github-search -l c++,go ssh honeypot      - search for things matching 'ssh honeypot' and written in either c++ or go")
-print("   lua github-search -n 10 -l go honeypot         - search for things matching 'honeypot' in go, until at least 10 displayed")
+print("   lua github-search -n 10 -l go honeypot        - search for things matching 'honeypot' in go, until at least 10 displayed")
+print("   lua github-search -l -c++,-go,-java vm        - search for things matching 'vm' and NOT written in c++, java or go")
 end
 
 
@@ -347,6 +348,7 @@ end
 
 function QueryFormatLanguages(qlang, languages)
 local output=""
+local prefix, toks, item
 
 -- if we are postfiltering by language but didn't specify any query language then set the query language to be the same as the postfilter
 if string.len(languages) > 0 and string.len(qlang) == 0 then qlang=languages end
@@ -356,11 +358,12 @@ then
 	item=toks:next()
 	while item
 	do
-		if (string.sub(item, 0, 1) == '!')
+		prefix=string.sub(item, 1, 1)
+		if prefix == '!' or prefix=="-"
 		then
-			output=output .. " -language:" .. string.sub(item,2);
+			output=output .. " -language:" .. string.sub(item,2)
 		else
-			output=output .. " language:" .. item;
+			output=output .. " language:" .. item
 		end
 	item=toks:next()
 	end

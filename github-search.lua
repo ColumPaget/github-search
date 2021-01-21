@@ -7,7 +7,7 @@ t=require ("terminal");
 
 
 -- Some global vars
-version=1.12
+version=1.13
 proxy=""
 project_langs={}
 project_count=0
@@ -302,7 +302,8 @@ do
 	then
 		print("version: "..version)
 		process.exit(0);
-	else
+	elseif (string.len(v) > 0)
+	then
 		if string.len(query) > 0 then query=query.." " end
 		query=query .. '"'..v..'" '
 	end

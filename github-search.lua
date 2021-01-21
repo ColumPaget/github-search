@@ -7,7 +7,7 @@ t=require ("terminal");
 
 
 -- Some global vars
-version=1.11
+version=1.12
 proxy=""
 project_langs={}
 project_count=0
@@ -39,6 +39,8 @@ end
 
 
 function LanguageInSearch(search_languages, language)
+local T
+
 	if search_languages==nil or string.len(search_languages) ==0 then return true end
 
 		T=strutil.TOKENIZER(search_languages,",")
@@ -55,6 +57,7 @@ end
 
 -- display the final list of projects per langugae
 function DisplayLanguageCounts()
+local key, value
 
 table.sort(project_langs)
 io.write(t.format("~m"..project_count.." projects (" .. matching_projects.. " matching) : "))
@@ -67,10 +70,47 @@ print(t.format("~0"))
 end
 
 
+
+function OutputSearchResult(I)
+local language, license, created, updated, name, description
+local str, pos
+
+language=I:value("language")
+license=I:value("license/key")
+created=I:value("created_at")
+pos=string.find(created, 'T')
+if pos ~= nil then created=string.sub(created, 1, pos-1) end
+updated=I:value("updated_at")
+pos=string.find(updated, 'T')
+if pos ~= nil then updated=string.sub(updated, 1, pos-1) end
+
+if strip_non_ascii == true
+then 
+	name=CleanNonASCIIChars(I:value("name"))
+	description=CleanNonASCIIChars(I:value("description"))
+else
+	name=I:value("name")
+	description=I:value("description")
+end
+
+print(t.format("~e~g" .. name .. "~0    lang: ~e~m" .. language .. "~0  license: ~e~m"..license.. "~0  watchers:" .. I:value("watchers") .. "  forks:" .. I:value("forks") .. " " .. "created: " .. created .. " " .. "updated: " .. updated .. "   ~b" .. I:value("html_url") .. "~0"))
+
+if ((description_maxlen > 0) and (strutil.strlen(description) > description_maxlen)) 
+then 
+	print(string.sub(description,1,description_maxlen).."...")
+else
+	print(description)
+end
+
+print()
+
+end
+
+
 function ParseReply(doc, search_languages)
 local val=0 
 local display_count=0
-local str, name, description
+local P, I, str, language
 
 P=dataparser.PARSER("json",doc)
 str=P:value("total_count");
@@ -78,6 +118,7 @@ if str==nil then return -1 end
 
 if (tonumber(str) < 1) then return(0) end
  
+--io.stderr:write(doc)
 I=P:open("/items");
 if I == nil then return -1 end
 
@@ -85,38 +126,17 @@ while I:next()
 do
 	language=I:value("language")
 -- spdx_id"
-	license=I:value("license/key")
 	project_count=project_count + 1
-	returned_lines=returned_lines+1
+	returned_lines=returned_lines + 1
 	if language == nil then language="none" end
 
 	val=project_langs[language]
 	if val == nil then project_langs[language]=1 
 	else project_langs[language]=val+1
 	end
-
 	if LanguageInSearch(search_languages, language)
 	then
-
-		if strip_non_ascii == true
-		then 
-			name=CleanNonASCIIChars(I:value("name"))
-			description=CleanNonASCIIChars(I:value("description"))
-		else
-			name=I:value("name")
-			description=I:value("description")
-		end
-
-		print(t.format("~e~g" .. name .. "~0    lang: ~e~m" .. language .. "~0  license: ~e~m"..license.. "~0  watchers:" .. I:value("watchers") .. "  forks:" .. I:value("forks") .. "    " .. "~b" .. I:value("html_url") .. "~0"))
-
-		if ((description_maxlen > 0) and (strutil.strlen(description) > description_maxlen)) 
-		then 
-		print(string.sub(description,1,description_maxlen).."...")
-		else
-		print(description)
-		end
-
-		print()
+		OutputSearchResult(I)
 		display_count=display_count+1
 	end
 end
@@ -284,7 +304,7 @@ do
 		process.exit(0);
 	else
 		if string.len(query) > 0 then query=query.." " end
-		query=query .. v
+		query=query .. '"'..v..'" '
 	end
 end
 

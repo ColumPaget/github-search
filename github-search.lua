@@ -3,11 +3,12 @@ require("strutil")
 require ("dataparser");
 require ("process");
 require ("net");
+require ("time");
 t=require ("terminal");
 
 
 -- Some global vars
-version=1.13
+version=1.14
 proxy=""
 project_langs={}
 project_count=0
@@ -17,7 +18,7 @@ quit_lines=100
 returned_lines=0
 debug=false
 strip_non_ascii=false
-
+Now=time.secs()
 
 function CleanNonASCIIChars(str)
 local i, c
@@ -70,19 +71,70 @@ print(t.format("~0"))
 end
 
 
+-- take a github dateTtime string and cut off the Ttime part.
+-- then color in the resulting string according to how recent
+-- the date is
+function ProcessDateString(datestr)
+local pos
+local when, diff
+
+when=time.tosecs("%Y-%m-%dT%H:%M:%S", datestr)
+pos=string.find(datestr, 'T')
+if pos ~= nil then datestr=string.sub(datestr, 1, pos-1) end
+
+diff=(Now - when) / (3600 * 24)
+if diff < 30 then datestr="~e~r" .. datestr .."~0" 
+elseif diff < 60 then datestr="~e~r" .. datestr .."~0" 
+elseif diff < 120 then datestr="~e~y" .. datestr.."~0"
+elseif diff < 365 then datestr="~y" .. datestr.."~0"
+else datestr="~c" .. datestr.."~0"
+end
+
+return datestr
+end
+
+
+function ProcessNumberString(numstr)
+local val
+
+val=tonumber(numstr)
+if val > 1000
+then
+	numstr="~e~r"..numstr.."~0"
+elseif val > 500
+then
+	numstr="~e~m"..numstr.."~0"
+elseif val > 200
+then
+	numstr="~e~y"..numstr.."~0"
+elseif val > 100
+then
+	numstr="~e~c"..numstr.."~0"
+elseif val > 50
+then
+	numstr="~r"..numstr.."~0"
+elseif val > 10
+then
+	numstr="~y"..numstr.."~0"
+else
+	numstr="~c"..numstr.."~0"
+end
+
+return numstr
+end
+
 
 function OutputSearchResult(I)
-local language, license, created, updated, name, description
+local language, license, created, updated, name, description, watchers, forks
 local str, pos
 
 language=I:value("language")
 license=I:value("license/key")
-created=I:value("created_at")
-pos=string.find(created, 'T')
-if pos ~= nil then created=string.sub(created, 1, pos-1) end
-updated=I:value("updated_at")
-pos=string.find(updated, 'T')
-if pos ~= nil then updated=string.sub(updated, 1, pos-1) end
+created=ProcessDateString(I:value("created_at"))
+updated=ProcessDateString(I:value("updated_at"))
+
+watchers=ProcessNumberString(I:value("watchers"))
+forks=ProcessNumberString(I:value("forks"))
 
 if strip_non_ascii == true
 then 
@@ -93,7 +145,7 @@ else
 	description=I:value("description")
 end
 
-print(t.format("~e~g" .. name .. "~0    lang: ~e~m" .. language .. "~0  license: ~e~m"..license.. "~0  watchers:" .. I:value("watchers") .. "  forks:" .. I:value("forks") .. " " .. "created: " .. created .. " " .. "updated: " .. updated .. "   ~b" .. I:value("html_url") .. "~0"))
+print(t.format("~e~g" .. name .. "~0    lang: ~e~m" .. language .. "~0  license: ~e~m"..license.. "~0  watchers:" .. watchers .. "  forks:" .. forks .. " " .. "created: " .. created .. " " .. "updated: " .. updated .. "   ~b" .. I:value("html_url") .. "~0"))
 
 if ((description_maxlen > 0) and (strutil.strlen(description) > description_maxlen)) 
 then 

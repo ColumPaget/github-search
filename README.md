@@ -42,8 +42,8 @@ usage:  lua github-search.lua [options] [search terms]
    -S       <number>         - minimum number of stars/watches that a result must have.
    -w       <number>         - minimum number of stars/watches that a result must have.
    -watches <number>         - minimum number of stars/watches that a result must have.
-   -created <date>           - created since date.
-   -since   <date>           - updated since date.
+   -created <date>           - created since date. Date format is YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS
+   -since   <date>           - updated since date. Date format is YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS
    -size    <bytes>          - repo larger than <bytes>. <bytes can have a metric suffix like 20k or 30G.
    -sz      <bytes>          - repo larger than <bytes>. <bytes can have a metric suffix like 20k or 30G.
    -license <key>            - search by repo license. <key> is a github-style license key.

@@ -8,7 +8,7 @@ t=require ("terminal");
 
 
 -- Some global vars
-version=1.14
+version=1.15
 proxy=""
 project_langs={}
 project_count=0
@@ -231,8 +231,8 @@ print("   -stars   <number>         - minimum number of stars/watches that a res
 print("   -S       <number>         - minimum number of stars/watches that a result must have.")
 print("   -w       <number>         - minimum number of stars/watches that a result must have.")
 print("   -watches <number>         - minimum number of stars/watches that a result must have.")
-print("   -created <date>           - created since date.")
-print("   -since   <date>           - updated since date.")
+print("   -created <date>           - created since date. Date format is YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS")
+print("   -since   <date>           - updated since date. Date format is YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS")
 print("   -size    <bytes>          - repo larger than <bytes>. <bytes can have a metric suffix like 20k or 30G.")
 print("   -sz      <bytes>          - repo larger than <bytes>. <bytes can have a metric suffix like 20k or 30G.")
 print("   -license <key>            - search by repo license. <key> is a github-style license key.")
@@ -272,6 +272,23 @@ end
 
 
 
+-- convert things the user is likely to type into github date format
+function ParseDate(str)
+local retstr=""
+local len
+
+len=strutil.strlen(str)
+if len == 10 -- 1234/67/90 format
+then
+	retstr=string.sub(str, 1, 4) .. "-" .. string.sub(str, 6, 7) .. "-" .. string.sub(str, 9, 10) .. "T00:00:00"
+else
+	retstr=string.gsub(str, '/', '-')
+end
+
+return retstr
+end
+
+
 function ParseCommandLine(args)
 local langs=""
 local query=""
@@ -307,12 +324,12 @@ do
 	elseif v == '-created'
 	then
 		if string.len(query) > 0 then query=query.." " end
-		query=query .. "created:>" .. args[i+1]
+		query=query .. "created:>" .. ParseDate(args[i+1])
 		args[i+1]=""
 	elseif v == '-since'
 	then
 		if string.len(query) > 0 then query=query.." " end
-		query=query .. "pushed:>" .. args[i+1]
+		query=query .. "pushed:>" .. ParseDate(args[i+1])
 		args[i+1]=""
 	elseif v == '-licence' or v == "-license" or v =="-li"
 	then

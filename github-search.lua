@@ -167,8 +167,9 @@ local P, I, str, language
 P=dataparser.PARSER("json",doc)
 str=P:value("total_count");
 if str==nil then return -1 end
-
-if (tonumber(str) < 1) then return(0) end
+val=tonumber(str)
+if val==nil then return -1 end
+if (val < 1) then return(0) end
  
 --io.stderr:write(doc)
 I=P:open("/items");

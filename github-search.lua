@@ -97,6 +97,8 @@ end
 function ProcessNumberString(numstr)
 local val
 
+if strutil.strlen(numstr) == 0 then return "" end
+
 val=tonumber(numstr)
 if val > 1000
 then
